@@ -1,8 +1,19 @@
 import requests
 import csv
+import json
+from openai import OpenAI
+import os
 
 BOLD = '\033[1m'
 RESET = '\033[0m'
+PARTICIPANTS = ['Luke', 'Zach', 'Greg', 'Alex']
+OMDB_KEY = os.getenv('OMDB_KEY')
+OPENAI_KEY = os.getenv('OPENAI_KEY')
+
+if not OMDB_KEY:
+    raise ValueError("API key not found. Please set the OMDB_API_KEY environment variable.")
+if not OPENAI_KEY:
+    raise ValueError("API key not found. Please set the OPENAI_KEY environment variable.")
 
 
 def get_data():
@@ -29,6 +40,7 @@ def get_data():
             'Alex Notes': row[9],
             'Zach Notes': row[10],
             'Greg Notes': row[11],
+            'IMDb Rating': None
         })
 
     return rec_db[1:]
@@ -171,10 +183,154 @@ def find_biggest_deviation(rec_db):
     print()
 
 
+def get_internet_rating(rec_name, omdb_key="901e6e28"):
+    url = "http://www.omdbapi.com/"
+    params = {
+        't': rec_name,
+        'apikey': OMDB_KEY
+    }
+
+    # Make the request to the OMDb API
+    response = requests.get(url, params=params)
+
+    # Check if the request was successful
+    if response.status_code == 200 and 'Error' not in str(response.json()):
+        movie_data = response.json()
+        return movie_data
+
+    # Handle mistyped names
+    rec_name = fix_name(rec_name)
+    params['t'] = rec_name
+    response = requests.get(url, params=params)
+    if response.status_code == 200 and 'Error' not in str(response.json()):
+        movie_data = response.json()
+        return movie_data
+    else:
+        print(f"Error: {response.status_code} ({rec_name})")
+
+
+def check_internet_data(rec_db):
+    # Load the local cache of the OMDB data
+    try:
+        with open('ContentDBData.json', 'r') as json_file:
+            content_db = json.load(json_file)
+    except FileNotFoundError:
+        content_db = {}
+
+    for i in range(len(rec_db)):
+        rec_name = rec_db[i]['Title']
+        if rec_name not in content_db:
+            print(f"Looking Up: {rec_name}")
+            content_db[rec_name] = get_internet_rating(rec_name)
+            if not content_db[rec_name]:
+                print(f"Error Looking Up {rec_name}")
+                exit()
+            with open('ContentDBData.json', 'w') as json_file:
+                json.dump(content_db, json_file)
+        # Add the IMDb Rating to the rec_db
+        try:
+            rec_db[i]['IMDb Rating'] = float(content_db[rec_name]['imdbRating'])
+        except ValueError:
+            pass
+
+    return rec_db
+
+
+def get_diff_from_internet(rec_db):
+    biggest_diff = {name: {'Recommendation': "", 'Difference': 0} for name in PARTICIPANTS}
+
+    for rec in rec_db:
+        for person, diff_rec in biggest_diff.items():
+            if not rec['Ratings'][person] or not rec['IMDb Rating']:
+                continue
+            try:
+                float(rec['Ratings'][person])
+            except ValueError:
+                continue
+            diff = float(rec['Ratings'][person]) - rec['IMDb Rating']
+            if abs(diff) > abs(diff_rec['Difference']):
+                biggest_diff[person]['Recommendation'] = rec['Title']
+                biggest_diff[person]['Difference'] = diff
+
+
+def get_proper_name(name_to_fix):
+    client = OpenAI(api_key=OPENAI_KEY)
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": f"What is the name of this show or movie on IMDb? Provide only the name, not anything else. "
+                           f"{name_to_fix}",
+            }
+        ],
+        model="gpt-4o-mini",
+    )
+    fixed_name = chat_completion.choices[0].message.content
+    print(f"OpenAI Fixed Name: '{name_to_fix}' to '{fixed_name}'")
+    return fixed_name
+
+
+def fix_name(name_to_fix):
+    try:
+        with open('NameFixes.json', 'r') as json_file:
+            name_fixes_db = json.load(json_file)
+    except FileNotFoundError:
+        name_fixes_db = {}
+
+    try:
+        fixed_name = name_fixes_db[name_to_fix]
+        return fixed_name
+    except KeyError:
+        fixed_name = get_proper_name(name_to_fix)
+        name_fixes_db[name_to_fix] = fixed_name
+
+    with open('NameFixes.json', 'w') as json_file:
+        json.dump(name_fixes_db, json_file)
+
+
+def find_biggest_inet_diff(rec_db):
+    statistics = {"Rating Count": {participant: 0 for participant in PARTICIPANTS},
+                  "Difference": {participant: 0 for participant in PARTICIPANTS},
+                  "Avg Diff": {participant: 0 for participant in PARTICIPANTS},
+                  "Biggest Diff": {participant: {"Rec Title": "", "Diff": 0} for participant in PARTICIPANTS}}
+    for rec in rec_db:
+        for participant in PARTICIPANTS:
+            if not rec['Ratings'][participant] or not rec['IMDb Rating']:
+                continue
+            try:
+                rating = float(rec['Ratings'][participant])
+            except ValueError:
+                continue
+            diff = rating - rec['IMDb Rating']
+            statistics['Difference'][participant] += diff
+            statistics['Rating Count'][participant] += 1
+            if abs(diff) > abs(statistics['Biggest Diff'][participant]['Diff']):
+                statistics['Biggest Diff'][participant]['Rec Title'] = rec['Title']
+                statistics['Biggest Diff'][participant]['Diff'] = diff
+
+    # Calculate Results
+    for participant in PARTICIPANTS:
+        statistics['Avg Diff'][participant] = (statistics['Difference'][participant] /
+                                               statistics['Rating Count'][participant])
+
+    # Sort Results
+    statistics['Avg Diff'] = dict(sorted(statistics['Avg Diff'].items(), key=lambda item: item[1]))
+
+    # Print Results
+    print(f"{BOLD}Average Deviation from IMDb{RESET}")
+    for participant, diff in statistics['Avg Diff'].items():
+        print(f"{participant}: {round(diff, 2)}")
+    print(f"\n{BOLD}Biggest Deviation from IMDb{RESET}")
+    for participant, data in statistics['Biggest Diff'].items():
+        print(f"{participant}: {data['Rec Title']} ({round(data['Diff'],2)})")
+
+
 if __name__ == '__main__':
     recommendations_db = get_data()
     statistics = get_average_rating(recommendations_db)
     recommendations_db = find_averages(recommendations_db)
+    recommendations_db = check_internet_data(recommendations_db)
     find_recommendations(recommendations_db)
     find_biggest_deviation(recommendations_db)
     print_stats(statistics)
+    find_biggest_inet_diff(recommendations_db)
