@@ -227,11 +227,27 @@ def check_internet_data(rec_db):
                 exit()
             with open('ContentDBData.json', 'w') as json_file:
                 json.dump(content_db, json_file)
+
         # Add the IMDb Rating to the rec_db
-        try:
+        if content_db[rec_name]['imdbRating'] == 'N/A':
+            rec_db[i]['IMDb Rating'] = None
+        else:
             rec_db[i]['IMDb Rating'] = float(content_db[rec_name]['imdbRating'])
+        try:
+            rec_db[i]['Poster'] = content_db[rec_name]['Poster']
+            rec_db[i]['Year'] = content_db[rec_name]['Year']
+            rec_db[i]['IMDB ID'] = content_db[rec_name]['imdbID']
         except ValueError:
-            pass
+            print(f"Error Looking Up:")
+            print(rec_db[i])
+            print(content_db[rec_name])
+        try:
+            rec_db[i]['Box Office'] = content_db[rec_name]['BoxOffice']
+            rec_db[i]['Box Office'] = int(rec_db[i]['Box Office'].replace('$', '').replace(',', ''))
+        except KeyError:
+            rec_db[i]['Box Office'] = 0
+        except ValueError:
+            rec_db[i]['Box Office'] = 0
 
     return rec_db
 
@@ -309,9 +325,9 @@ def find_biggest_inet_diff(rec_db):
                 statistics['Biggest Diff'][participant]['Diff'] = diff
 
     # Calculate Results
-    for participant in PARTICIPANTS:
-        statistics['Avg Diff'][participant] = (statistics['Difference'][participant] /
-                                               statistics['Rating Count'][participant])
+    #for participant in PARTICIPANTS:
+    #    statistics['Avg Diff'][participant] = (statistics['Difference'][participant] /
+    #                                           statistics['Rating Count'][participant])
 
     # Sort Results
     statistics['Avg Diff'] = dict(sorted(statistics['Avg Diff'].items(), key=lambda item: item[1]))
@@ -332,11 +348,11 @@ def write_rec_db(rec_db):
 
 if __name__ == '__main__':
     recommendations_db = get_data()
-    statistics = get_average_rating(recommendations_db)
+    #statistics = get_average_rating(recommendations_db)
     recommendations_db = find_averages(recommendations_db)
     recommendations_db = check_internet_data(recommendations_db)
-    find_recommendations(recommendations_db)
-    find_biggest_deviation(recommendations_db)
-    print_stats(statistics)
-    find_biggest_inet_diff(recommendations_db)
+    #find_recommendations(recommendations_db)
+    #find_biggest_deviation(recommendations_db)
+    #print_stats(statistics)
+    #find_biggest_inet_diff(recommendations_db)
     write_rec_db(recommendations_db)

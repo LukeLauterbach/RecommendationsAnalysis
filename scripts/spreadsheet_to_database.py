@@ -4,7 +4,7 @@ import json
 
 PARTIPCIANTS = ['Alex', 'Greg', 'Luke', 'Zach']
 
-with open('recommendations.json', 'r') as file:
+with open('../recommendations.json', 'r') as file:
     recs = json.load(file)
 
 with app.app_context():
@@ -14,7 +14,6 @@ with app.app_context():
                 float(rec['Ratings'][participant])
             except ValueError:
                 rec['Ratings'][participant] = None
-
         print(rec)
         new_item = Item(
             name=rec['Title'],
@@ -26,7 +25,11 @@ with app.app_context():
             rating_zach=rec['Ratings']['Zach'],
             rating_average=rec['Average Rating'],
             rating_imdb=rec['IMDb Rating'],
-            number_of_ratings=rec['Number of Ratings']
+            number_of_ratings=rec['Number of Ratings'],
+            imdb_id=rec['IMDB ID'],
+            poster=rec['Poster'],
+            box_office=rec['Box Office'],
+            year=rec['Year'],
         )
         db.session.add(new_item)
 

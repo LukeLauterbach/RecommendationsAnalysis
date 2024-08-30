@@ -74,3 +74,127 @@ th {
 .item-details {
     display: none;
 }
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+.nav-bar {
+    background-color: #333;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-bar a {
+    color: #fff;
+    text-decoration: none;
+    margin-left: 20px;
+    font-weight: bold;
+}
+
+.table-container {
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    table-layout: auto;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer; /* Add cursor pointer for clickable headers */
+}
+
+th.sortable.asc::after {
+    content: ' \25B2'; /* Up arrow */
+}
+
+th.sortable.desc::after {
+    content: ' \25BC'; /* Down arrow */
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+input[type="number"] {
+    width: 60px;
+    padding: 5px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    text-align: center;
+}
+
+input[type="number"]:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.rating-input {
+    background-color: #e8f0fe;
+}
+
+.alert {
+    display: none;
+    margin-top: 10px;
+    padding: 10px;
+    color: #fff;
+    border-radius: 4px;
+}
+
+.alert-success {
+    background-color: #4CAF50;
+}
+
+.alert-error {
+    background-color: #f44336;
+}
+
+.item-details {
+    display: none;
+    background-color: #f9f9f9;
+    padding: 10px;
+    margin-top: 10px;
+    border-left: 4px solid #4CAF50;
+}
+
+.item-details p {
+    margin: 5px 0;
+}
+
+.item-name {
+   cursor: pointer;
+   color: #4CAF50;
+}
+
+.description-input {
+    width: 100%; /* Make the textarea span the entire width of the td */
+    box-sizing: border-box; /* Ensure padding and border are included in the width */
+    overflow: hidden; /* Prevent scrollbars from appearing */
+    resize: none; /* Disable manual resizing */
+    height: 100%; /* Adjust this value to approximately 3 rows */
+    min-height: 150px;
+}

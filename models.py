@@ -11,7 +11,12 @@ class User(db.Model):
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    box_office = db.Column(db.Float, nullable=True)
+    imdb_id = db.Column(db.String(40), nullable=True)
     name = db.Column(db.String(80), nullable=False)
+    poster = db.Column(db.String(120), nullable=True)
+    year = db.Column(db.Integer(), nullable=True)
+    format = db.Column(db.String(20), nullable=True)
     genre = db.Column(db.String(80), nullable=True)
     where_to_watch = db.Column(db.String(80), nullable=True)
     rating_alex = db.Column(db.Float, nullable=True)

@@ -8,7 +8,13 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* Add any additional styles specific to the statistics page here */
+        .positive {
+            color: green;
+        }
+
+        .negative {
+            color: red;
+        }
     </style>
 </head>
 
@@ -22,34 +28,59 @@
     </div>
 
     <div class="table-container">
-        <h2>Item with the Largest Difference between Luke's Rating and IMDb Rating</h2>
-        {% if item %}
+        <h3>Biggest IMDb Differences</h3>
+        {% if imdb_diffs %}
         <table>
             <thead>
                 <tr>
+                    <th>Person</th>
                     <th>Title</th>
-                    <th>Type</th>
-                    <th>Description</th>
-                    <th>Rating Luke</th>
-                    <th>Rating IMDb</th>
                     <th>Difference</th>
+                    <th>Rating</th>
+                    <th>IMDb Rating</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>{{ item.Item.title }}</td>
-                    <td>{{ item.Item.type }}</td>
-                    <td>{{ item.Item.description }}</td>
-                    <td>{{ item.Item.rating_luke }}</td>
-                    <td>{{ item.Item.rating_imdb }}</td>
-                    <td>{{ item.difference }}</td>
-                </tr>
+                {% for entry in imdb_diffs %}
+                    <tr>
+                        <td>{{ entry.Person }}</td>
+                        <td>{{ entry.Title }}</td>
+                        <td><span class="number" data-value="{{ entry.Difference }}"></span></td>
+                        <td>{{ entry.Rating }}</td>
+                        <td>{{ entry.IMDBRating }}
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
         {% else %}
         <p>No items found that meet the criteria.</p>
         {% endif %}
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all elements with the class 'number'
+            var numberElements = document.querySelectorAll('.number');
+
+            numberElements.forEach(function(element) {
+                // Get the value from the data attribute
+                var value = parseFloat(element.getAttribute('data-value'));
+
+                if (isNaN(value)) {
+                    return; // Skip if not a valid number
+                }
+
+                // Determine the class and format the value
+                if (value >= 0) {
+                    element.textContent = value;
+                    element.classList.add('positive');
+                } else {
+                    element.textContent = Math.abs(value); // Remove the minus sign
+                    element.classList.add('negative');
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
