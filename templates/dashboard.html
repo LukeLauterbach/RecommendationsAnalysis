@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .nav-bar {
+            background-color: #333;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-bar a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: bold;
+        }
+
+        .table-container {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            table-layout: auto;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer; /* Add cursor pointer for clickable headers */
+        }
+
+        th.sortable.asc::after {
+            content: ' \25B2'; /* Up arrow */
+        }
+
+        th.sortable.desc::after {
+            content: ' \25BC'; /* Down arrow */
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            font-size: 14px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .rating-input {
+            background-color: #e8f0fe;
+        }
+
+        .alert {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            color: #fff;
+            border-radius: 4px;
+        }
+
+        .alert-success {
+            background-color: #4CAF50;
+        }
+
+        .alert-error {
+            background-color: #f44336;
+        }
+
+        .item-details {
+            display: none;
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-top: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .item-details p {
+            margin: 5px 0;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <div class="nav-bar">
+        <h1>Dashboard</h1>
+        <div>
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('statistics') }}">Statistics</a>
+        </div>
+    </div>
+
+    <div class="alert" id="new-entry-alert"></div>
+
+    <div class="table-container">
+        <form id="new-entry-form">
+            <table id="new-item">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Alex</th>
+                        <th>Greg</th>
+                        <th>Luke</th>
+                        <th>Zach</th>
+                        <th>Submit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <input type="text" id="title" name="title" required>
+                        </td>
+                        <td>
+                            <select id="type" name="type" required>
+                                <option value="TV">TV</option>
+                                <option value="Movie">Movie</option>
+                            </select>
+                        </td>
+                        <td>
+                            <textarea id="description" name="description" rows="3"></textarea>
+                        </td>
+                        <td>
+                            <input type="number" id="rating_alex" name="rating_alex" min="1" max="10">
+                        </td>
+                        <td>
+                            <input type="number" id="rating_greg" name="rating_greg" min="1" max="10">
+                        </td>
+                        <td>
+                            <input type="number" id="rating_luke" name="rating_luke" min="1" max="10">
+                        </td>
+                        <td>
+                            <input type="number" id="rating_zach" name="rating_zach" min="1" max="10">
+                        </td>
+                        <td>
+                            <button type="submit">Add Entry</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    </div>
+
+<script>
+    $(document).ready(function () {
+        $('#new-entry-form').on('submit', function(e) {
+            e.preventDefault(); // Prevent the default form submission
+
+            $.ajax({
+                url: "{{ url_for('add_new_entry') }}",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    title: $('#title').val() || '', // Provide default value
+                    type: $('#type').val() || 'TV', // Provide default value
+                    description: $('#description').val() || '', // Provide default value
+                    rating_alex: $('#rating_alex').val() || 0, // Default to 0
+                    rating_luke: $('#rating_luke').val() || 0, // Default to 0
+                    rating_greg: $('#rating_greg').val() || 0, // Default to 0
+                    rating_zach: $('#rating_zach').val() || 0  // Default to 0
+                }),
+                success: function(response) {
+                    var alertBox = $('#new-entry-alert');
+                    if (response.status === 'success') {
+                        alertBox.text('New entry added successfully!');
+                        alertBox.removeClass().addClass('alert alert-success').slideDown().delay(3000).slideUp();
+
+                        // Clear the form fields
+                        $('#new-entry-form')[0].reset();
+
+                        // Reload the table data
+                        loadTableData();
+                    } else {
+                        alertBox.text('Error adding entry: ' + response.message);
+                        alertBox.removeClass().addClass('alert alert-error').slideDown().delay(3000).slideUp();
+                    }
+                },
+                error: function() {
+                    var alertBox = $('#new-entry-alert');
+                    alertBox.text('An error occurred while adding the entry.');
+                    alertBox.removeClass().addClass('alert alert-error').slideDown().delay(3000).slideUp();
+                }
+            });
+        });
+
+        function loadTableData() {
+            $.ajax({
+                url: "{{ url_for('get_items') }}",
+                type: "GET",
+                success: function(response) {
+                    if (response.status === 'success') {
+                        var tableBody = $('#items-table tbody');
+                        tableBody.empty(); // Clear the table body
+
+                        response.items.forEach(function(item) {
+                            var row = `<tr>
+                                <td>${item.title}</td>
+                                <td>${item.type}</td>
+                                <td>${item.description}</td>
+                                <td>${item.rating_alex || 'N/A'}</td>
+                                <td>${item.rating_luke || 'N/A'}</td>
+                                <td>${item.rating_greg || 'N/A'}</td>
+                                <td>${item.rating_zach || 'N/A'}</td>
+                                <td>${item.rating_average || 'N/A'}</td>
+                                <td>${item.rating_imdb || 'N/A'}</td>
+                                <td>${item.number_of_ratings || 'N/A'}</td>
+                            </tr>`;
+                            tableBody.append(row);
+                        });
+                    } else {
+                        console.error('Failed to load table data:', response.message);
+                    }
+                },
+                error: function() {
+                    console.error('Failed to load table data.');
+                }
+            });
+        }
+
+        // Load table data on page load
+        loadTableData();
+    });
+</script>
+
+
+    <div class="table-container">
+        <table id="items-table">
+            <thead>
+                <tr>
+                    <th class="sortable" data-sort="name">Title</th>
+                    <th class="sortable" data-sort="rating_alex">Alex</th>
+                    <th class="sortable" data-sort="rating_greg">Greg</th>
+                    <th class="sortable" data-sort="rating_luke">Luke</th>
+                    <th class="sortable" data-sort="rating_zach">Zach</th>
+                    <th class="sortable" data-sort="rating_average">Average</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr class="item-row" data-item-id="{{ item.id }}">
+                    <td><span class="item-name" style="cursor: pointer; color: #4CAF50;">{{ item.name }}</span></td>
+                    <td><input type="number" value="{{ item.rating_alex }}" data-item-id="{{ item.id }}" data-rating-type="alex" class="rating-input"></td>
+                    <td><input type="number" value="{{ item.rating_greg }}" data-item-id="{{ item.id }}" data-rating-type="greg" class="rating-input"></td>
+                    <td><input type="number" value="{{ item.rating_luke }}" data-item-id="{{ item.id }}" data-rating-type="luke" class="rating-input"></td>
+                    <td><input type="number" value="{{ item.rating_zach }}" data-item-id="{{ item.id }}" data-rating-type="zach" class="rating-input"></td>
+                    <td>{{ item.rating_average | round(1) }}</td>
+                </tr>
+                <tr class="item-details" id="details-{{ item.id }}">
+                    <td colspan="6"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="alert" id="alert"></div>
+
+    <script>
+        $(document).ready(function () {
+            // Handle form submission
+            $('#new-entry-form').on('submit', function(e) {
+                e.preventDefault(); // Prevent the default form submission
+
+                $.ajax({
+                    url: "{{ url_for('add_new_entry') }}",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        title: $('#title').val() || '', // Provide default value
+                        type: $('#type').val() || 'TV', // Provide default value
+                        description: $('#description').val() || '', // Provide default value
+                        rating_alex: $('#rating_alex').val() || 0, // Default to 0
+                        rating_luke: $('#rating_luke').val() || 0, // Default to 0
+                        rating_greg: $('#rating_greg').val() || 0, // Default to 0
+                        rating_zach: $('#rating_zach').val() || 0  // Default to 0
+                    }),
+                    success: function(response) {
+                        var alertBox = $('#new-entry-alert');
+                        if (response.status === 'success') {
+                            alertBox.text('New entry added successfully!');
+                            alertBox.removeClass().addClass('alert alert-success').slideDown().delay(3000).slideUp();
+
+                            // Clear the form fields
+                            $('#new-entry-form')[0].reset();
+
+                            // Reload the table data
+                            loadTableData();
+                        } else {
+                            alertBox.text('Error adding entry: ' + response.message);
+                            alertBox.removeClass().addClass('alert alert-error').slideDown().delay(3000).slideUp();
+                        }
+                    },
+                    error: function() {
+                        var alertBox = $('#new-entry-alert');
+                        alertBox.text('An error occurred while adding the entry.');
+                        alertBox.removeClass().addClass('alert alert-error').slideDown().delay(3000).slideUp();
+                    }
+                });
+            });
+
+            function loadTableData() {
+                $.ajax({
+                    url: "{{ url_for('get_items') }}",
+                    type: "GET",
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            var tableBody = $('#items-table tbody');
+                            tableBody.empty(); // Clear the table body
+
+                            response.items.forEach(function(item) {
+                                var row = `<tr class="item-row" data-item-id="${item.id}">
+                                    <td><span class="item-name" style="cursor: pointer; color: #4CAF50;">${item.title}</span></td>
+                                    <td><input type="number" value="${item.rating_alex}" data-item-id="${item.id}" data-rating-type="alex" class="rating-input"></td>
+                                    <td><input type="number" value="${item.rating_greg}" data-item-id="${item.id}" data-rating-type="greg" class="rating-input"></td>
+                                    <td><input type="number" value="${item.rating_luke}" data-item-id="${item.id}" data-rating-type="luke" class="rating-input"></td>
+                                    <td><input type="number" value="${item.rating_zach}" data-item-id="${item.id}" data-rating-type="zach" class="rating-input"></td>
+                                    <td>${item.rating_average || 'N/A'}</td>
+                                </tr>`;
+                                tableBody.append(row);
+                            });
+                        } else {
+                            console.error('Failed to load table data:', response.message);
+                        }
+                    },
+                    error: function() {
+                        console.error('Failed to load table data.');
+                    }
+                });
+            }
+
+            // Load table data on page load
+            loadTableData();
+
+            // Sorting functionality
+            $('.sortable').on('click', function () {
+                var column = $(this).data('sort');
+                var rows = $('#items-table tbody tr.item-row').get();
+                var isAscending = $(this).hasClass('asc');
+                var index = $(this).index();
+
+                rows.sort(function (a, b) {
+                    var A, B;
+
+                    if (column.startsWith('rating')) {
+                        // Get the value from input fields
+                        A = parseFloat($(a).find('td').eq(index).find('input').val()) || 0;
+                        B = parseFloat($(b).find('td').eq(index).find('input').val()) || 0;
+                    } else {
+                        // For text content
+                        A = $(a).find('td').eq(index).text();
+                        B = $(b).find('td').eq(index).text();
+                    }
+
+                    if (A < B) {
+                        return isAscending ? -1 : 1;
+                    }
+                    if (A > B) {
+                        return isAscending ? 1 : -1;
+                    }
+                    return 0;
+                });
+
+                $.each(rows, function (index, row) {
+                    $('#items-table').children('tbody').append(row);
+                });
+
+                $('.sortable').removeClass('asc desc');
+                $(this).addClass(isAscending ? 'desc' : 'asc');
+            });
+
+            // Update rating color
+            function setColor(input) {
+                var value = parseFloat(input.val()) || 0;  // Handle empty values
+                var min = 1;
+                var max = 10;
+                var percentage = (value - min) / (max - min);
+
+                // Ensure percentage is between 0 and 1
+                percentage = Math.max(0, Math.min(1, percentage));
+
+                var red = Math.round(255 * (1 - percentage));
+                var green = Math.round(255 * percentage);
+                var color = `rgb(${red}, ${green}, 0)`;
+
+                // Apply background color
+                input.css('background-color', value ? color : '#fff'); // White for empty values
+            }
+
+            // Apply color to all inputs initially
+            $('.rating-input').each(function () {
+                setColor($(this));
+            });
+
+            // Update color when input value changes
+            $('.rating-input').on('input', function () {
+                setColor($(this));
+            });
+
+            // Item details functionality
+            $('.item-name').on('click', function () {
+                var item_id = $(this).closest('.item-row').data('item-id');
+                var detailsRow = $('#details-' + item_id);
+                var detailsCell = detailsRow.find('td');
+
+                if (detailsRow.is(':visible')) {
+                    detailsRow.slideUp();
+                } else {
+                    $.ajax({
+                        url: "/get_item_details/" + item_id,
+                        type: "GET",
+                        success: function (data) {
+                            if (data.status !== 'error') {
+                                detailsCell.html(
+                                    '<p><strong>IMDb Rating:</strong> ' + data.rating_imdb + '</p>' +
+                                    '<p><strong>Description:</strong> <textarea id="item-description" rows="3">' + data.description + '</textarea></p>' +
+                                    '<button class="delete-button" data-item-id="' + item_id + '">Delete Item</button>'
+                                );
+                                detailsRow.slideDown();
+
+                                // Attach delete event handler after showing the details
+                                $('.delete-button').on('click', function () {
+                                    var item_id = $(this).data('item-id');
+
+                                    $.ajax({
+                                        url: "/delete_item/" + item_id,
+                                        type: "POST",
+                                        success: function (response) {
+                                            if (response.status === 'success') {
+                                                // Remove the item row and details row from the table
+                                                $('tr[data-item-id="' + item_id + '"]').remove();
+                                                detailsRow.remove(); // Remove the associated details row
+                                            } else {
+                                                alert('Error deleting item: ' + response.message);
+                                            }
+                                        },
+                                        error: function () {
+                                            alert('An error occurred while deleting the item.');
+                                        }
+                                    });
+                                });
+
+                                // Update description dynamically
+                                $('#item-description').on('input', function () {
+                                    var newDescription = $(this).val();
+                                    $.ajax({
+                                        url: "/update_description",
+                                        type: "POST",
+                                        contentType: "application/json",
+                                        data: JSON.stringify({
+                                            item_id: item_id,
+                                            description: newDescription
+                                        }),
+                                        success: function(response) {
+                                            if (response.status === 'success') {
+                                                console.log('Description updated successfully.');
+                                            } else {
+                                                console.error('Failed to update description:', response.message);
+                                            }
+                                        },
+                                        error: function() {
+                                            console.error('Failed to update description.');
+                                        }
+                                    });
+                                });
+                            } else {
+                                detailsCell.html('<p>Error loading details: ' + data.message + '</p>');
+                                detailsRow.slideDown();
+                            }
+                        },
+                        error: function () {
+                            detailsCell.html('<p>An error occurred while loading the details.</p>');
+                            detailsRow.slideDown();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

@@ -325,6 +325,11 @@ def find_biggest_inet_diff(rec_db):
         print(f"{participant}: {data['Rec Title']} ({round(data['Diff'],2)})")
 
 
+def write_rec_db(rec_db):
+    with open('recommendations.json', 'w') as json_file:
+        json.dump(rec_db, json_file)
+
+
 if __name__ == '__main__':
     recommendations_db = get_data()
     statistics = get_average_rating(recommendations_db)
@@ -334,3 +339,4 @@ if __name__ == '__main__':
     find_biggest_deviation(recommendations_db)
     print_stats(statistics)
     find_biggest_inet_diff(recommendations_db)
+    write_rec_db(recommendations_db)

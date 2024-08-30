@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Add any additional styles specific to the statistics page here */
+    </style>
+</head>
+
+<body>
+    <div class="nav-bar">
+        <h1>Statistics</h1>
+        <div>
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('statistics') }}">Statistics</a>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <h2>Item with the Largest Difference between Luke's Rating and IMDb Rating</h2>
+        {% if item %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Rating Luke</th>
+                    <th>Rating IMDb</th>
+                    <th>Difference</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ item.Item.title }}</td>
+                    <td>{{ item.Item.type }}</td>
+                    <td>{{ item.Item.description }}</td>
+                    <td>{{ item.Item.rating_luke }}</td>
+                    <td>{{ item.Item.rating_imdb }}</td>
+                    <td>{{ item.difference }}</td>
+                </tr>
+            </tbody>
+        </table>
+        {% else %}
+        <p>No items found that meet the criteria.</p>
+        {% endif %}
+    </div>
+</body>
+
+</html>
