@@ -27,7 +27,15 @@ def imdb_lookup(item):
                 json.dump(content_db, json_file)
 
     content_db_entry = content_db[item_name]
-    item.box_office = content_db_entry['BoxOffice']
+
+    try:
+        item.box_office = content_db_entry['BoxOffice']
+        item.box_office = item.box_office.replace('$', '').replace(',', '')
+    except KeyError:
+        item.box_office = 0
+    except ValueError:
+        item.box_office = 0
+
     item.poster = content_db_entry['Poster']
     item.rating = content_db_entry['imdbRating']
     item.imdb_id = content_db_entry['imdbID']
