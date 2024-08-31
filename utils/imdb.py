@@ -1,10 +1,13 @@
 import json
 import requests
 from openai import OpenAI
+from dotenv import load_dotenv
 import os
 
-OMDB_KEY = os.getenv('OMDB_KEY')
-OPENAI_KEY = os.getenv('OPENAI_KEY')
+load_dotenv()
+
+OMDB_KEY = os.getenv('API_KEY')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 
 def imdb_lookup(item):
@@ -103,7 +106,7 @@ def imdb_lookup_id(item):
 
 
 def get_proper_name(name_to_fix):
-    client = OpenAI(api_key=OPENAI_KEY)
+    client = OpenAI(api_key=OPENAI_API_KEY)
     chat_completion = client.chat.completions.create(
         messages=[
             {
@@ -137,7 +140,7 @@ def fix_name(name_to_fix):
         json.dump(name_fixes_db, json_file)
 
 
-def get_internet_rating(rec_name="", imdb_id="", omdb_key="901e6e28"):
+def get_internet_rating(rec_name="", imdb_id=""):
     url = "http://www.omdbapi.com/"
     params = {'apikey': OMDB_KEY}
     if rec_name:
