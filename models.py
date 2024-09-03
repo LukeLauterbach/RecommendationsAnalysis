@@ -27,3 +27,4 @@ class Item(db.Model):
     rating_imdb = db.Column(db.Float, nullable=True)
     number_of_ratings = db.Column(db.Integer, nullable=True)
     description = db.Column(db.Text, nullable=True)
+    weighted_rating = db.Column(db.Float, nullable=True)

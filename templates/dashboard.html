@@ -72,6 +72,7 @@
                     <th class="sortable" data-sort="rating_{{ person }}">{{ person.capitalize() }}</th>
                     {% endfor %}
                     <th class="sortable" data-sort="rating_average">Average</th>
+                    <th class="sortable" data-sort="weighted_rating">Weighted Rating</th>
                 </tr>
             </thead>
             <tbody>
@@ -82,6 +83,7 @@
                     <td><input type="number" value="{{ item['rating_' + person] }}" data-item-id="{{ item.id }}" data-rating-type="{{ person }}" class="rating-input"></td>
                     {% endfor %}
                     <td class="average-rating">{{ item.rating_average if item.rating_average is not none else 0.0 }}</td>
+                    <td class="weighted-rating">{{ item.weighted_rating }}</td>
                 </tr>
                 <tr class="item-details" id="details-{{ item.id }}">
                     <td colspan="6"></td>

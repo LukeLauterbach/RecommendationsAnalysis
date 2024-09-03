@@ -148,6 +148,7 @@ def update_rating():
         return jsonify({'status': 'error', 'message': 'Invalid rating type'}), 400
 
     item.rating_average = calculate_average_rating(item)  # Recalculate average rating
+    item.weighted_rating = calculate_weighted_rating(item)  # Recalculate weighted rating
 
     # Commit changes to the database
     db.session.commit()
@@ -271,6 +272,30 @@ def statistics():
                            imdb_diffs=imdb_diffs,
                            biggest_outliers=biggest_outliers,
                            average_rating=average_rating)
+
+
+def calculate_weighted_rating(item):
+    avg_ratings = average_ratings()
+    num_ratings = 0
+    weighted_rating = 0
+    for person in avg_ratings:
+        rating = getattr(item, f"rating_{person['Person'].lower()}")
+        if not rating:
+            continue
+        num_ratings += 1
+        rating = rating - person['Average']
+        weighted_rating += rating
+
+    if not num_ratings:
+        return 0
+
+    weighted_rating /= num_ratings
+
+    weight = (num_ratings * 5) / 100
+    weighted_rating = weighted_rating * (abs(weighted_rating) * weight)
+    weighted_rating = round(weighted_rating, 2)  # Round result
+
+    return weighted_rating
 
 
 def get_imdb_diff():

@@ -1,4 +1,4 @@
-from app import app, db
+from app import app, db, calculate_weighted_rating
 from models import Item
 import json
 
@@ -14,7 +14,6 @@ with app.app_context():
                 float(rec['Ratings'][participant])
             except ValueError:
                 rec['Ratings'][participant] = None
-        print(rec)
         new_item = Item(
             name=rec['Title'],
             genre=rec['Genre'],
@@ -35,3 +34,9 @@ with app.app_context():
 
     db.session.commit()
     print("Items added successfully!")
+
+    # Update weighted rankings
+    for item in Item.query.all():
+        item.weighted_rating = calculate_weighted_rating(item)
+    db.session.commit()
+    print("Weighted ratings successfully set!")
