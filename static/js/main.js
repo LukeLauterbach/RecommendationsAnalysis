@@ -234,7 +234,7 @@ $(document).ready(function () {
                             detailsCell.html(
                                 '<table>' +
                                     '<tr data-item-id="' + item_id + '">' +
-                                        '<td style="padding: 0; border: none; width: 1px; white-space: nowrap;" rowspan="6"><img src="' + data.poster + '"></td>' +
+                                        '<td style="padding: 0; border: none; width: 1px; white-space: nowrap;" rowspan="7"><img src="' + data.poster + '"></td>' +
                                     '</tr>' +
                                     '<tr>' +
                                         '<td><strong>Description</strong></td>' +
@@ -247,6 +247,10 @@ $(document).ready(function () {
                                     '<tr>' +
                                         '<td style="width: 1px; white-space: nowrap;"><strong>IMDb Rating</strong></td>' +
                                         '<td>' + data.rating_imdb + '</td>' +
+                                    '</tr>'+
+                                        '<tr>' +
+                                        '<td style="width: 1px; white-space: nowrap;"><strong>Genre</strong></td>' +
+                                        '<td>' + data.genre + '</td>' +
                                     '</tr>' +
                                         '<tr>' +
                                         '<td style="width: 1px; white-space: nowrap;"><strong>Box Office</strong></td>' +

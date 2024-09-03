@@ -6,7 +6,7 @@ import os
 
 load_dotenv()
 
-OMDB_KEY = os.getenv('API_KEY')
+OMDB_KEY = os.getenv('OMDB_KEY')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 
@@ -69,6 +69,7 @@ def imdb_lookup_id(item):
     if item_id not in content_db:
         print(f"Looking Up: {item_id}")
         content_db[item_id] = get_internet_rating(imdb_id=item_id)
+        print(content_db[item_id])
         if not content_db[item_id]:
             print(f"Error Looking Up {item_id}")
             return
@@ -77,15 +78,6 @@ def imdb_lookup_id(item):
                 json.dump(content_db, json_file)
 
     content_db_entry = content_db[item_id]
-
-    try:
-        item.box_office = content_db_entry['BoxOffice']
-        item.box_office = item.box_office.replace('$', '').replace(',', '')
-    except KeyError:
-        item.box_office = 0
-    except ValueError:
-        item.box_office = 0
-
     item.poster = content_db_entry['Poster']
     item.rating = content_db_entry['imdbRating']
     item.imdb_id = content_db_entry['imdbID']
@@ -93,15 +85,20 @@ def imdb_lookup_id(item):
     item.rating_imdb = content_db_entry['imdbRating']
     item.year = content_db_entry['Year']
     item.name = content_db_entry['Title']
+    print(item.rating)
 
     try:
         item.box_office = content_db_entry['BoxOffice']
-        item.box_office = item.box_office.replace('$', '').replace(',', '')
+        if item.box_office == "N/A":
+            item.box_office = 0
+        else:
+            item.box_office = item.box_office.replace('$', '').replace(',', '')
     except KeyError:
         item.box_office = 0
     except ValueError:
         item.box_office = 0
 
+    print(item)
     return item
 
 

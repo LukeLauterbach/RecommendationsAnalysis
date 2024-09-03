@@ -44,7 +44,7 @@ def calculate_average_rating(item):
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        username = request.form['username'].lower()
         password = request.form['password']
 
         user = User.query.filter_by(username=username).first()
@@ -161,6 +161,7 @@ def get_item_details(item_id):
         return jsonify({
             'status': 'success',
             'name': item.name,
+            'genre': item.genre,
             'rating_alex': item.rating_alex,
             'rating_greg': item.rating_greg,
             'rating_luke': item.rating_luke,
@@ -236,10 +237,10 @@ def update_imdb_id():
     new_imdb_id = data.get('imdb_id')
 
     item = Item.query.get(item_id)
-    import utils.imdb as imdb
-    item = imdb.imdb_lookup_id(item)
     if item:
         item.imdb_id = new_imdb_id
+        import utils.imdb as imdb
+        item = imdb.imdb_lookup_id(item)
         db.session.commit()
         return jsonify({'status': 'success'})
     else:
