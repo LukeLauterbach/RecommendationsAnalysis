@@ -33,7 +33,10 @@ def imdb_lookup(item):
 
     try:
         item.box_office = content_db_entry['BoxOffice']
-        item.box_office = item.box_office.replace('$', '').replace(',', '')
+        if item.box_office.lower() == 'n/a':
+            item.box_office = 0
+        else:
+            item.box_office = item.box_office.replace('$', '').replace(',', '')
     except KeyError:
         item.box_office = 0
     except ValueError:
@@ -45,14 +48,6 @@ def imdb_lookup(item):
     item.genre = content_db_entry['Genre']
     item.rating_imdb = content_db_entry['imdbRating']
     item.year = content_db_entry['Year']
-
-    try:
-        item.box_office = content_db_entry['BoxOffice']
-        item.box_office = item.box_office.replace('$', '').replace(',', '')
-    except KeyError:
-        item.box_office = 0
-    except ValueError:
-        item.box_office = 0
 
     return item
 
@@ -89,7 +84,7 @@ def imdb_lookup_id(item):
 
     try:
         item.box_office = content_db_entry['BoxOffice']
-        if item.box_office == "N/A":
+        if item.box_office.lower() == "n/a":
             item.box_office = 0
         else:
             item.box_office = item.box_office.replace('$', '').replace(',', '')
@@ -98,7 +93,6 @@ def imdb_lookup_id(item):
     except ValueError:
         item.box_office = 0
 
-    print(item)
     return item
 
 

@@ -243,7 +243,10 @@ def check_internet_data(rec_db):
             print(content_db[rec_name])
         try:
             rec_db[i]['Box Office'] = content_db[rec_name]['BoxOffice']
-            rec_db[i]['Box Office'] = int(rec_db[i]['Box Office'].replace('$', '').replace(',', ''))
+            if rec_db[i]['Box Office'].lower() == 'n/a':
+                rec_db[i]['Box Office'] = '0'
+            else:
+                rec_db[i]['Box Office'] = int(rec_db[i]['Box Office'].replace('$', '').replace(',', ''))
         except KeyError:
             rec_db[i]['Box Office'] = 0
         except ValueError:

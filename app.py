@@ -87,9 +87,10 @@ def add_new_entry():
         else:
             setattr(new_item, f"rating_{participant}", None)
 
-    new_item.average = calculate_average_rating(new_item)
+    new_item.rating_average = calculate_average_rating(new_item)
     import utils.imdb as imdb
     new_item = imdb.imdb_lookup(new_item)
+    new_item.weighted_rating = calculate_weighted_rating(new_item)
 
     try:
         db.session.add(new_item)
@@ -285,7 +286,6 @@ def calculate_weighted_rating(item):
         num_ratings += 1
         rating = rating - person['Average']
         weighted_rating += rating
-
     if not num_ratings:
         return 0
 

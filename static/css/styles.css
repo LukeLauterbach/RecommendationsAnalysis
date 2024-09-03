@@ -198,3 +198,23 @@ input[type="number"]:focus {
     height: 100%; /* Adjust this value to approximately 3 rows */
     min-height: 150px;
 }
+
+/* Mobile-specific styles */
+@media (max-width: 600px) {
+    .table-container {
+        margin: 0;
+    }
+
+    .nav-bar {
+        margin: 0;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    .item-details {
+        margin: 0;
+    }
+}
