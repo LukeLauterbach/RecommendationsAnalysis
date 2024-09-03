@@ -352,7 +352,7 @@ if __name__ == '__main__':
     recommendations_db = find_averages(recommendations_db)
     recommendations_db = check_internet_data(recommendations_db)
     #find_recommendations(recommendations_db)
-    #find_biggest_deviation(recommendations_db)
+    find_biggest_deviation(recommendations_db)
     #print_stats(statistics)
     #find_biggest_inet_diff(recommendations_db)
     write_rec_db(recommendations_db)

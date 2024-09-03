@@ -81,7 +81,7 @@
                     {% for person in ["alex", "greg", "luke", "zach"] %}
                     <td><input type="number" value="{{ item['rating_' + person] }}" data-item-id="{{ item.id }}" data-rating-type="{{ person }}" class="rating-input"></td>
                     {% endfor %}
-                    <td>{{ item.rating_average if item.rating_average is not none else 0.0 }}</td>
+                    <td class="average-rating">{{ item.rating_average if item.rating_average is not none else 0.0 }}</td>
                 </tr>
                 <tr class="item-details" id="details-{{ item.id }}">
                     <td colspan="6"></td>

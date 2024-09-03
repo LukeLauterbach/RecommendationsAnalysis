@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from models import db, User, Item
 from config import Config
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import func, case, select
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -257,26 +258,86 @@ def statistics():
     highest_rated_item = db.session.query(Item).filter(Item.rating_luke.is_(None)).order_by(
         (Item.rating_alex + Item.rating_greg + Item.rating_zach) / 3).first()
 
+    imdb_diffs = get_imdb_diff()
+    biggest_outliers = get_biggest_outlier()
+    average_rating = average_ratings()
+
+    # Sort the lists
+    imdb_diffs = sorted(imdb_diffs, key=lambda x: abs(x['Difference']), reverse=True)
+    biggest_outliers = sorted(biggest_outliers, key=lambda x: abs(x['Difference']), reverse=True)
+    average_rating = sorted(average_rating, key=lambda x: abs(x['Average']), reverse=True)
+
+    return render_template('statistics.html',
+                           imdb_diffs=imdb_diffs,
+                           biggest_outliers=biggest_outliers,
+                           average_rating=average_rating)
+
+
+def get_imdb_diff():
     imdb_diffs = []
-    users = ['Alex', 'Greg', 'Luke', 'Zach']
-    for user in users:
-        user = user.lower()
+    for user in PARTICIPANTS:
         difference = db.session.query(
             Item,
             (getattr(Item, f"rating_{user}") - Item.rating_imdb).label('difference')
-        ).filter(getattr(Item, f"rating_{user}") .isnot(None), Item.rating_imdb.isnot(None)).order_by(
-            db.func.abs(getattr(Item, f"rating_{user}")  - Item.rating_imdb).desc()
+        ).filter(getattr(Item, f"rating_{user}").isnot(None), Item.rating_imdb.isnot(None)).order_by(
+            db.func.abs(getattr(Item, f"rating_{user}") - Item.rating_imdb).desc()
         ).first()
+
+        average_rating = (db.session.query(func.avg(getattr(Item, f"rating_{user}"))).scalar())
+        average_rating_imdb = (db.session.query(func.avg(Item.rating_imdb))
+                               .filter(getattr(Item, f"rating_{user}").isnot(None)).scalar())
+        average_difference = average_rating - average_rating_imdb
+        average_difference = round(average_difference, 2)
+
         imdb_diffs.append({'Person': user.capitalize(),
                            'Title': difference.Item.name,
                            'Rating': difference.Item.rating_luke,
                            'IMDBRating': difference.Item.rating_imdb,
-                           'Difference': difference.difference})
+                           'Difference': difference.difference,
+                           'IMDbDiff': average_difference})
 
-    # Sort the list
-    imdb_diffs = sorted(imdb_diffs, key=lambda x: abs(x['Difference']), reverse=True)
+    return imdb_diffs
 
-    return render_template('statistics.html', imdb_diffs=imdb_diffs)
+
+def get_biggest_outlier():
+    biggest_outlier = []
+    for participant in PARTICIPANTS:
+        biggest_outlier.append({'Person': participant.capitalize(), 'Difference': 0, 'Title': None})
+
+    most_different_item = db.session.query(Item).filter(
+        Item.rating_luke.isnot(None),
+        Item.rating_alex.isnot(None),
+        Item.rating_greg.isnot(None),
+        Item.rating_zach.isnot(None)
+    )
+    for item in most_different_item:
+        for i in range(len(biggest_outlier)):
+            difference = getattr(item, f"rating_{biggest_outlier[i]['Person']}".lower()) - item.rating_average
+
+            if abs(difference) > abs(biggest_outlier[i]['Difference']):
+                biggest_outlier[i]['Difference'] = round(difference, 2)
+                biggest_outlier[i]['Title'] = item.name
+                biggest_outlier[i]['Average'] = item.rating_average
+                biggest_outlier[i]['Rating'] = getattr(item, f"rating_{biggest_outlier[i]['Person']}".lower())
+
+    return biggest_outlier
+
+
+def average_ratings():
+    average_ratings = []
+    for participant in PARTICIPANTS:
+        rating_column = f'rating_{participant}'
+        stmt = db.session.query(func.avg(getattr(Item, rating_column)).label('average_rating'))
+        average_rating = stmt.scalar()
+
+        stmt = db.session.query(func.count().label('rating_count')).filter(getattr(Item, rating_column).isnot(None))
+        rating_count = stmt.scalar()  # Use .scalar() to get a single value from the result
+
+        average_ratings.append({f"Person": participant.capitalize(),
+                                'Average': round(average_rating, 2),
+                                'Count': rating_count})
+
+    return average_ratings
 
 
 if __name__ == '__main__':

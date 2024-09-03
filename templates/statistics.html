@@ -28,7 +28,7 @@
     </div>
 
     <div class="table-container">
-        <h3>Biggest IMDb Differences</h3>
+        <h3>Biggest Difference from IMDb</h3>
         {% if imdb_diffs %}
         <table>
             <thead>
@@ -38,6 +38,7 @@
                     <th>Difference</th>
                     <th>Rating</th>
                     <th>IMDb Rating</th>
+                    <th>Average Difference from IMDb</th>
                 </tr>
             </thead>
             <tbody>
@@ -47,7 +48,64 @@
                         <td>{{ entry.Title }}</td>
                         <td><span class="number" data-value="{{ entry.Difference }}"></span></td>
                         <td>{{ entry.Rating }}</td>
-                        <td>{{ entry.IMDBRating }}
+                        <td>{{ entry.IMDBRating }}</td>
+                        <td><span class="number" data-value="{{ entry.IMDbDiff }}"></span></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No items found that meet the criteria.</p>
+        {% endif %}
+    </div>
+
+    <div class="table-container">
+        <h3>Biggest Difference from The Group</h3>
+        {% if biggest_outliers %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Person</th>
+                    <th>Title</th>
+                    <th>Difference</th>
+                    <th>Rating</th>
+                    <th>Average</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in biggest_outliers %}
+                    <tr>
+                        <td>{{ entry.Person }}</td>
+                        <td>{{ entry.Title }}</td>
+                        <td><span class="number" data-value="{{ entry.Difference }}"></span></td>
+                        <td>{{ entry.Rating }}</td>
+                        <td>{{ entry.Average }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No items found that meet the criteria.</p>
+        {% endif %}
+    </div>
+
+    <div class="table-container">
+        <h3>Average Rating</h3>
+        {% if average_rating %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Person</th>
+                    <th>Average</th>
+                    <th>Number of Ratings</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in average_rating %}
+                    <tr>
+                        <td>{{ entry.Person }}</td>
+                        <td><span class="number" data-value="{{ entry.Average }}"></span></td>
+                        <td>{{ entry.Count }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

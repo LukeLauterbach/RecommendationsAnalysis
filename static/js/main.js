@@ -10,6 +10,26 @@ function deleteItem(button) {
     });
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to format the average rating
+    function formatAverageRating(rating) {
+        // Check if rating is an integer
+        if (Number.isInteger(rating)) {
+            return rating; // Return string for round numbers
+        } else {
+            // Return the first digit after the decimal point
+            const [integerPart, decimalPart] = rating.toFixed(2).split('.');
+            return `${integerPart}.${decimalPart.charAt(0)}`;
+        }
+    }
+
+    // Process each average rating cell
+    document.querySelectorAll('.average-rating').forEach(function(cell) {
+        const rating = parseFloat(cell.textContent);
+        cell.textContent = formatAverageRating(rating);
+    });
+});
+
 $(document).ready(function () {
         // Handle form submission
         $('#new-entry-form').on('submit', function(e) {
